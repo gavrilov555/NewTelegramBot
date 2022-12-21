@@ -30836,3 +30836,7 @@
 2022-12-20 23:23:30 DEBUG ConsumerServiceImpl:39 - NODE: Doc message is received
 2022-12-20 23:23:52 DEBUG ConsumerServiceImpl:25 - NODE: Text message is received
 2022-12-21 00:25:09 DEBUG ConsumerServiceImpl:25 - NODE: Text message is received
+2022-12-21 10:23:55 DEBUG ConsumerServiceImpl:25 - NODE: Text message is received
+2022-12-21 10:23:58 DEBUG ConsumerServiceImpl:25 - NODE: Text message is received
+2022-12-21 10:24:01 DEBUG ConsumerServiceImpl:25 - NODE: Text message is received
+2022-12-21 10:24:04 DEBUG ConsumerServiceImpl:25 - NODE: Text message is received
