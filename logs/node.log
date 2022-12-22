@@ -30840,3 +30840,8 @@
 2022-12-21 10:23:58 DEBUG ConsumerServiceImpl:25 - NODE: Text message is received
 2022-12-21 10:24:01 DEBUG ConsumerServiceImpl:25 - NODE: Text message is received
 2022-12-21 10:24:04 DEBUG ConsumerServiceImpl:25 - NODE: Text message is received
+2022-12-22 09:20:18 DEBUG ConsumerServiceImpl:40 - NODE: Doc message is received
+2022-12-22 09:22:07 DEBUG ConsumerServiceImpl:32 - NODE: Photo message is received
+2022-12-22 09:23:59 DEBUG ConsumerServiceImpl:32 - NODE: Photo message is received
+2022-12-22 09:38:36 DEBUG ConsumerServiceImpl:40 - NODE: Doc message is received
+2022-12-22 09:57:20 DEBUG ConsumerServiceImpl:40 - NODE: Doc message is received

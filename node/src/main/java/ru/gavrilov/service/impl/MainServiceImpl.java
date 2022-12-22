@@ -8,13 +8,19 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.User;
 import ru.gavrilov.dao.AppUserDAO;
 import ru.gavrilov.dao.RawDataDAO;
+import ru.gavrilov.entity.AppDocument;
 import ru.gavrilov.entity.AppUser;
 import ru.gavrilov.entity.RawData;
+import ru.gavrilov.exception.UploadFileException;
+import ru.gavrilov.service.FileService;
 import ru.gavrilov.service.MainService;
 import ru.gavrilov.service.ProducerService;
+import ru.gavrilov.service.enums.ServiceCommands;
+
 import static ru.gavrilov.entity.UserState.BASIC_STATE;
 import static ru.gavrilov.entity.UserState.WAIT_FOR_EMAIL_STATE;
 import static ru.gavrilov.service.enums.ServiceCommands.*;
+
 
 @Service
 @Log4j
@@ -22,11 +28,13 @@ public class MainServiceImpl implements MainService {
     private final RawDataDAO rawDataDAO;
     private final ProducerService producerService;
     private final AppUserDAO appUserDAO;
+    private final FileService fileService;
 
-    public MainServiceImpl(RawDataDAO rawDataDAO, ProducerService producerService, AppUserDAO appUserDAO) {
+    public MainServiceImpl(RawDataDAO rawDataDAO, ProducerService producerService, AppUserDAO appUserDAO, FileService fileService) {
         this.rawDataDAO = rawDataDAO;
         this.producerService = producerService;
         this.appUserDAO = appUserDAO;
+        this.fileService = fileService;
     }
 
     @Override
@@ -37,7 +45,8 @@ public class MainServiceImpl implements MainService {
         var text = update.getMessage().getText();
         var output = "";
 
-        if (CANCEL.equals(text)) {
+        var serviceCommands = ServiceCommands.fromValue(text);
+        if (CANCEL.equals(serviceCommands)){
             output = cancelProcess(appUser);
         } else if (BASIC_STATE.equals(userState)) {
             output = processServiceCommand(appUser, text);
@@ -52,12 +61,13 @@ public class MainServiceImpl implements MainService {
     }
 
     private String processServiceCommand(AppUser appUser, String cmd) {
-        if (REGISTRATION.equals(cmd)) {
+        var serviceCommands = ServiceCommands.fromValue(cmd);
+        if (REGISTRATION.equals(serviceCommands)) {
             //TODO добавить регистрацию
             return "Времено не доступно.";
-        } else if (HELP.equals(cmd)) {
+        } else if (HELP.equals(serviceCommands)) {
             return help();
-        } else if (START.equals(cmd)) {
+        } else if (START.equals(serviceCommands)) {
             return "Приветствую! Чтобы посмотреть список доступных команд введите /help";
         }else {
             return "Неизвестная команда! Чтобы посмотреть список доступных команд введите /help";
@@ -84,8 +94,17 @@ public class MainServiceImpl implements MainService {
         if (isNotAllowToSendContent(chatId, appUser)) {
             return;
         }
-        var answer = "Документ успешно загружен! Ссылка для скачивания: http://test.ru/get-doc/555";
-        sendAnswer(answer, chatId);
+        try {
+            AppDocument doc = fileService.processDoc(update.getMessage());
+            //TODO Добавить генерацию ссылки для скачивания документа
+            var answer = "Файл успешно загружен!"
+                    + "Ссылка для скачивания: http://test.ru/get-doc/555";
+            sendAnswer(answer, chatId);
+        } catch (UploadFileException ex) {
+            log.error(ex);
+            String error = "К сожалению, загрузка файла не удалась. Повторите попытку позже.";
+            sendAnswer(error, chatId);
+        }
 
     }
 
@@ -99,7 +118,8 @@ public class MainServiceImpl implements MainService {
     private boolean isNotAllowToSendContent(Long chatId, AppUser appUser) {
         var userState = appUser.getState();
         if (!appUser.getIsActive()) {
-            var error = "Зарегистрируйтесь или активируйте свою учетную запись для загрузки контента.";
+            var error = "Зарегистрируйтесь или активируйте "
+                    + "свою учетную запись для загрузки контента.";
             sendAnswer(error, chatId);
             return true;
         } else if (!BASIC_STATE.equals(userState)) {
@@ -119,7 +139,8 @@ public class MainServiceImpl implements MainService {
             return;
         }
         //TODO добавить сохранение фото
-        var answer = "Документ успешно загружен! Ссылка для скачивания: http://test.ru/get-photo/555";
+        var answer = "Фото успешно загружено! "
+                + "Ссылка для скачивания: http://test.ru/get-photo/555";
         sendAnswer(answer, chatId);
     }
 
