@@ -9,6 +9,7 @@ import org.telegram.telegrambots.meta.api.objects.User;
 import ru.gavrilov.dao.AppUserDAO;
 import ru.gavrilov.dao.RawDataDAO;
 import ru.gavrilov.entity.AppDocument;
+import ru.gavrilov.entity.AppPhoto;
 import ru.gavrilov.entity.AppUser;
 import ru.gavrilov.entity.RawData;
 import ru.gavrilov.exception.UploadFileException;
@@ -138,10 +139,16 @@ public class MainServiceImpl implements MainService {
         if (isNotAllowToSendContent(chatId, appUser)) {
             return;
         }
-        //TODO добавить сохранение фото
-        var answer = "Фото успешно загружено! "
-                + "Ссылка для скачивания: http://test.ru/get-photo/555";
-        sendAnswer(answer, chatId);
+        try{
+            AppPhoto appPhoto = fileService.processPhoto(update.getMessage());
+            var answer = "Фото успешно загружено"
+                    + "Ссылка для скачивания: http://test.ru/get-photo/555";
+            sendAnswer(answer, chatId);
+        }catch (UploadFileException ex) {
+            log.error(ex);
+            String error = "К сожалению, загрузка фото не удалась. Повторите попытку позже.";
+            sendAnswer(error, chatId);
+        }
     }
 
     private AppUser findOrSaveAppUser(Update update) {
