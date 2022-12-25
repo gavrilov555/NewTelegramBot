@@ -16,6 +16,7 @@ import ru.gavrilov.exception.UploadFileException;
 import ru.gavrilov.service.FileService;
 import ru.gavrilov.service.MainService;
 import ru.gavrilov.service.ProducerService;
+import ru.gavrilov.service.enums.LinkType;
 import ru.gavrilov.service.enums.ServiceCommands;
 
 import static ru.gavrilov.entity.UserState.BASIC_STATE;
@@ -97,9 +98,9 @@ public class MainServiceImpl implements MainService {
         }
         try {
             AppDocument doc = fileService.processDoc(update.getMessage());
-            //TODO Добавить генерацию ссылки для скачивания документа
+            String link = fileService.generateLink(doc.getId(), LinkType.GET_DOC);
             var answer = "Файл успешно загружен!"
-                    + "Ссылка для скачивания: http://test.ru/get-doc/555";
+                    + "Ссылка для скачивания: " + link;
             sendAnswer(answer, chatId);
         } catch (UploadFileException ex) {
             log.error(ex);
@@ -140,9 +141,10 @@ public class MainServiceImpl implements MainService {
             return;
         }
         try{
-            AppPhoto appPhoto = fileService.processPhoto(update.getMessage());
+            AppPhoto photo = fileService.processPhoto(update.getMessage());
+            String link = fileService.generateLink(photo.getId(), LinkType.GET_PHOTO);
             var answer = "Фото успешно загружено"
-                    + "Ссылка для скачивания: http://test.ru/get-photo/555";
+                    + "Ссылка для скачивания: " + link;
             sendAnswer(answer, chatId);
         }catch (UploadFileException ex) {
             log.error(ex);
