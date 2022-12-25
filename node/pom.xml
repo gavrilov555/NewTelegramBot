@@ -60,7 +60,11 @@
             <groupId>ru.gavrilov</groupId>
             <artifactId>common-jpa</artifactId>
             <version>1.0-SNAPSHOT</version>
-            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>ru.gavrilov</groupId>
+            <artifactId>common-utils</artifactId>
+            <version>1.0-SNAPSHOT</version>
         </dependency>
 
     </dependencies>

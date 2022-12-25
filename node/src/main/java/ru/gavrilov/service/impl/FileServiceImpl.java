@@ -17,6 +17,8 @@ import ru.gavrilov.entity.AppPhoto;
 import ru.gavrilov.entity.BinaryContent;
 import ru.gavrilov.exception.UploadFileException;
 import ru.gavrilov.service.FileService;
+import ru.gavrilov.service.enums.LinkType;
+import ru.gavrilov.utils.CryptoTool;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -32,15 +34,19 @@ public class FileServiceImpl implements FileService {
     private String fileInfoUri;
     @Value("${service.file_storage.uri}")
     private String fileStorageUri;
+    @Value("${link.address}")
+    private String linkAddress;
     private AppDocumentDAO appDocumentDAO;
     private BinaryContentDAO binaryContentDAO;
     private AppPhotoDAO appPhotoDAO;
+    private CryptoTool cryptoTool;
 
 
-    public FileServiceImpl(AppDocumentDAO appDocumentDAO, BinaryContentDAO binaryContentDAO, AppPhotoDAO appPhotoDAO) {
+    public FileServiceImpl(AppDocumentDAO appDocumentDAO, BinaryContentDAO binaryContentDAO, AppPhotoDAO appPhotoDAO, CryptoTool cryptoTool) {
         this.appDocumentDAO = appDocumentDAO;
         this.binaryContentDAO = binaryContentDAO;
         this.appPhotoDAO = appPhotoDAO;
+        this.cryptoTool = cryptoTool;
     }
 
     @Override
@@ -76,9 +82,9 @@ public class FileServiceImpl implements FileService {
 
     @Override
     public AppPhoto processPhoto(Message telegramMessage) {
-        //TODO обрабатываем только одно фото в сообщении
-
-        PhotoSize telegramPhoto = telegramMessage.getPhoto().get(0);
+        var photoSizeCount = telegramMessage.getPhoto().size();
+        var photoIndex = photoSizeCount > 1 ? telegramMessage.getPhoto().size() - 1 : 0;
+        PhotoSize telegramPhoto = telegramMessage.getPhoto().get(photoIndex);
         String fileId = telegramPhoto.getFileId();
         ResponseEntity<String> response = getFilePath(fileId);
         if (response.getStatusCode() == HttpStatus.OK) {
@@ -89,6 +95,7 @@ public class FileServiceImpl implements FileService {
             throw new UploadFileException("Bad response from telegram service: " + response);
         }
     }
+
 
     private AppPhoto buildTransientAppPhoto(PhotoSize telegramPhoto, BinaryContent persistentBinaryContent) {
         return AppPhoto.builder()
@@ -132,5 +139,12 @@ public class FileServiceImpl implements FileService {
                 throw new UploadFileException(urlObj.toExternalForm(), e);
             }
         }
+
+    @Override
+    public String generateLink(Long docId, LinkType linkType) {
+        var hash = cryptoTool.hashOf(docId);
+        return "http://" + linkAddress + "/" + linkType + "?id=" + hash;
     }
+
+}
 
