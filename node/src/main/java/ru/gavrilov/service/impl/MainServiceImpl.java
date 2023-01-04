@@ -13,6 +13,7 @@ import ru.gavrilov.entity.AppPhoto;
 import ru.gavrilov.entity.AppUser;
 import ru.gavrilov.entity.RawData;
 import ru.gavrilov.exception.UploadFileException;
+import ru.gavrilov.service.AppUserService;
 import ru.gavrilov.service.FileService;
 import ru.gavrilov.service.MainService;
 import ru.gavrilov.service.ProducerService;
@@ -31,12 +32,14 @@ public class MainServiceImpl implements MainService {
     private final ProducerService producerService;
     private final AppUserDAO appUserDAO;
     private final FileService fileService;
+    private final AppUserService appUserService;
 
-    public MainServiceImpl(RawDataDAO rawDataDAO, ProducerService producerService, AppUserDAO appUserDAO, FileService fileService) {
+    public MainServiceImpl(RawDataDAO rawDataDAO, ProducerService producerService, AppUserDAO appUserDAO, FileService fileService, AppUserService appUserService) {
         this.rawDataDAO = rawDataDAO;
         this.producerService = producerService;
         this.appUserDAO = appUserDAO;
         this.fileService = fileService;
+        this.appUserService = appUserService;
     }
 
     @Override
@@ -53,7 +56,7 @@ public class MainServiceImpl implements MainService {
         } else if (BASIC_STATE.equals(userState)) {
             output = processServiceCommand(appUser, text);
         } else if (WAIT_FOR_EMAIL_STATE.equals(userState)) {
-            //TODO добавить обработку емейла
+            output = appUserService.setEmail(appUser, text);
         }else {
             log.error("Unknown user state" + userState);
             output = "Неизвестная ошибка! Введите /cancel и попробуйте снова!";
@@ -65,8 +68,7 @@ public class MainServiceImpl implements MainService {
     private String processServiceCommand(AppUser appUser, String cmd) {
         var serviceCommands = ServiceCommands.fromValue(cmd);
         if (REGISTRATION.equals(serviceCommands)) {
-            //TODO добавить регистрацию
-            return "Времено не доступно.";
+            return appUserService.registerUser(appUser);
         } else if (HELP.equals(serviceCommands)) {
             return help();
         } else if (START.equals(serviceCommands)) {
@@ -155,8 +157,8 @@ public class MainServiceImpl implements MainService {
 
     private AppUser findOrSaveAppUser(Update update) {
         User telegramUser = update.getMessage().getFrom();
-        AppUser persistentAppUser = appUserDAO.findAppUserByTelegramUserId(telegramUser.getId());
-        if (persistentAppUser == null) {
+        var optional = appUserDAO.findByTelegramUserId(telegramUser.getId());
+        if (optional.isEmpty()) {
             AppUser transientAppUser = AppUser.builder()
                     .telegramUserId(telegramUser.getId())
                     .username(telegramUser.getUserName())
@@ -167,7 +169,7 @@ public class MainServiceImpl implements MainService {
                     .build();
             return appUserDAO.save(transientAppUser);
         }
-        return persistentAppUser;
+        return optional.get();
     }
 
     private void saveRawData(Update update) {
