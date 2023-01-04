@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import ru.gavrilov.service.UpdateProducer;
-import ru.gavrilov.utils.MessageUtils;
+import ru.gavrilov.MessageUtils;
 
 import static ru.gavrilov.model.RabbitQueue.*;
 
