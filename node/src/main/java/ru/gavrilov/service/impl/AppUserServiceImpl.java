@@ -11,8 +11,10 @@ import ru.gavrilov.dto.MailParams;
 import ru.gavrilov.entity.AppUser;
 import ru.gavrilov.service.AppUserService;
 import ru.gavrilov.utils.CryptoTool;
+
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
+
 import static ru.gavrilov.entity.UserState.BASIC_STATE;
 import static ru.gavrilov.entity.UserState.WAIT_FOR_EMAIL_STATE;
 
